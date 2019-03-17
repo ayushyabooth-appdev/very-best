@@ -1,12 +1,12 @@
 class VenuesController < ApplicationController
   def index
     @q = Venue.ransack(params.fetch("q", nil))
-    @venues = @q.result(:distinct => true).includes(:bookmarks, :neighborhood, :fans, :specialties).page(params.fetch("page", nil)).per(10)
-
-    @location_hash = Gmaps4rails.build_markers(@venues.where.not(:address_latitude => nil)) do |venue, marker|
+    @venues = @q.result(:distinct => true).includes(:bookmarks, :neighborhood, :fans, :specialties ).page(params.fetch("page", nil))
+    @venues = @venues.select{|venue| venue.fans.map{|x| x[:id]}.include?current_user.id }
+    @location_hash = Gmaps4rails.build_markers(@venues.select{|venue| venue.address_latitude != nil}) do |venue, marker|
       marker.lat venue.address_latitude
       marker.lng venue.address_longitude
-      marker.infowindow "<h5><a href='/venues/#{venue.id}'>#{venue.created_at}</a></h5><small>#{venue.address_formatted_address}</small>"
+      marker.infowindow "<h5><a href='/venues/#{venue.id}'>#{venue.name}</a></h5><small>#{venue.address_formatted_address}</small>"
 
     end
 
@@ -32,7 +32,8 @@ class VenuesController < ApplicationController
     @venue.name = params.fetch("name")
     @venue.address = params.fetch("address")
     @venue.neighborhood_id = params.fetch("neighborhood_id")
-
+    @venue.geocode_address
+  
     save_status = @venue.save
 
     if save_status == true
@@ -61,6 +62,7 @@ class VenuesController < ApplicationController
     @venue.name = params.fetch("name")
     @venue.address = params.fetch("address")
     @venue.neighborhood_id = params.fetch("neighborhood_id")
+    @venue.geocode_address
 
     save_status = @venue.save
 
