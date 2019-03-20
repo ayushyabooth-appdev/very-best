@@ -45,17 +45,19 @@
               <form action="/create_bookmark" class="form-inline" method="post">
                   
                   <div class="form-group">
-                    <label for="venue_id" class="control-label">
+                    <label for="venue_id" class="control-label sr-only">
                       Venue
                     </label>
-                    <%= select_tag("venue_id", options_from_collection_for_select(Venue.all, :id, :name, 2), :class => "form-control") %>
+                    <%= select_tag("venue_id", options_from_collection_for_select(Venue.all, :id, :name, @venue.try(:venue_id)), prompt: "Choose a venue...", :class => "form-control form-control-sm mr-sm-1") %>
+                  <button class="btn btn-primary btn-sm">
+                  <i class="fa fa-heart"></i>
+                </button>
+                  
                   </div>
                   <input type="hidden" name="dish_id" value="<%=dish.id%>">
                   <input type="hidden" name="user_id" value="<%=current_user.id%>">
                   <input type="hidden" name="notes" value="">
-                <button class="btn btn-primary btn-sm">
-                  <i class="fa fa-heart"></i>
-                </button>
+                  
               </form>
             <%else%>
               <a href="venues/<%=user_dish_bookmarks.first.venue.id%>"><%=user_dish_bookmarks.first.venue.name%></a>

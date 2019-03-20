@@ -3,6 +3,9 @@ class VenuesController < ApplicationController
     @q = Venue.ransack(params.fetch("q", nil))
     @venues = @q.result(:distinct => true).includes(:bookmarks, :neighborhood, :fans, :specialties ).page(params.fetch("page", nil))
     @venues = @venues.select{|venue| venue.fans.map{|x| x[:id]}.include?current_user.id }
+    @venues.each do |venue|
+      venue.geocode_address
+    end
     @location_hash = Gmaps4rails.build_markers(@venues.select{|venue| venue.address_latitude != nil}) do |venue, marker|
       marker.lat venue.address_latitude
       marker.lng venue.address_longitude
@@ -16,6 +19,9 @@ class VenuesController < ApplicationController
   def show
     @bookmark = Bookmark.new
     @venue = Venue.find(params.fetch("id"))
+      
+
+    
 
     render("venues_templates/show.html.erb")
   end
